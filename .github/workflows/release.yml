@@ -1,0 +1,79 @@
+on:
+  push:
+    branches:
+      - main
+
+name: Release swift package collection
+
+jobs:
+  release:
+    name: Auto release Swift package collection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # needed to find the latest tag
+
+      - name: Cache tools
+        id: cache-tools
+        uses: actions/cache@v2
+        with:
+          path: bin
+          key: ${{ runner.os }}-tools
+
+      - name: Build tools
+        if: steps.cache-tools.outputs.cache-hit != 'true'
+        run: |
+          ./build_binaries.sh
+
+      - name: Create certificates files
+        env:
+          CERTIFICATE_CONTENT_B64: ${{ secrets.CERTIFICATE_CONTENT_B64 }}
+          PRIVATE_KEY_CONTENT: ${{ secrets.PRIVATE_KEY_CONTENT }}
+        run: |
+          echo "$CERTIFICATE_CONTENT_B64" | base64 --decode > spm_collection.cer
+          echo "$PRIVATE_KEY_CONTENT" > spm_collection.pem
+
+      - name: Get next revision
+        id: revision
+        run: |
+          if LAST_TAG=$(git describe --tags --abbrev=0 2> /dev/null); then
+            REVISION_NUMBER="$(($(echo "$LAST_TAG" | sed "s/v//") + 1))"
+          else
+            REVISION_NUMBER="1"
+          fi
+          echo "::set-output name=REVISION_NUMBER::${REVISION_NUMBER}"
+
+      - name: Debug files
+        run: |
+          pwd
+          ls -al
+          shasum -a 256 spm_collection.cer
+
+      - name: Generate collection
+        env:
+          REVISION: ${{ steps.revision.outputs.REVISION_NUMBER }}
+        run: |
+          ./generate_collection.sh packages_list.json "$REVISION" spm_collection.pem spm_collection.cer collection.json
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.revision.outputs.REVISION_NUMBER }}
+          release_name: Release v${{ steps.revision.outputs.REVISION_NUMBER }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./collection.json
+          asset_name: collection.json
+          asset_content_type: application/json

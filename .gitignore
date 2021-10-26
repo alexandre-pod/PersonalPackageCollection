@@ -1,0 +1,15 @@
+
+# Secrets
+*.cer
+*.p12
+*.pem
+
+# Public certificates
+!ca-intermediate.cer
+!ca-root.cer
+
+# generated files
+swift-package-collection-generator
+bin
+unsigned-collection.json
+collection.json
