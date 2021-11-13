@@ -9,6 +9,7 @@
     { "url": "https://github.com/Swinject/Swinject" },
     { "url": "https://github.com/pointfreeco/swift-snapshot-testing.git" },
     { "url": "https://github.com/SDWebImage/SDWebImageSwiftUI.git" },
+    { "url": "https://github.com/SDWebImage/SDWebImage.git" },
   ],
   "author": {
     "name": "Alexandre Podlewski"
