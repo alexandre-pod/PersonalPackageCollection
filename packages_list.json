@@ -10,6 +10,7 @@
     { "url": "https://github.com/pointfreeco/swift-snapshot-testing.git" },
     { "url": "https://github.com/SDWebImage/SDWebImageSwiftUI.git" },
     { "url": "https://github.com/SDWebImage/SDWebImage.git" },
+    { "url": "https://github.com/faberNovel/SDWebImageMockPlugin.git" },
   ],
   "author": {
     "name": "Alexandre Podlewski"
