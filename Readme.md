@@ -44,7 +44,7 @@ the collection can be generated and signed with this command:
 ## Maintainer informations
 
 Secrets needed for the GitHub auto release workflow:
-- `PRIVATE_KEY_CONTENT`: the content os the certificate private key
+- `PRIVATE_KEY_CONTENT`: the content of the certificate private key (spm_collection.pem)
 - `CERTIFICATE_CONTENT_B64`: the base64 of the certificate (`base64 -i spm_collection.cer`)
 
 The release workflow update the collection on every commit on master.
