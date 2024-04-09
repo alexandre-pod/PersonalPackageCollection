@@ -17,19 +17,30 @@ https://github.com/alexandre-pod/PersonalPackageCollection/releases/latest/downl
 To generate the private key file, add the private key (p12) of the swift package collection
 certificate at `./spm_collection.p12`, next run those commands to convert it to the correct format:
 ```bash
-openssl pkcs12 -nocerts -nodes -out spm_collection.pem -in spm_collection.p12
-openssl rsa -in spm_collection.pem -out spm_collection.pem
+openssl pkcs12 -in spm_collection.p12 -nocerts -noenc -legacy | sed -ne '/-BEGIN PRIVATE KEY-/,/-END PRIVATE KEY-/p' > spm_collection.pem
 ```
 
 Signing the collection requires the entire chain of CA ([documentation](https://github.com/apple/swift-package-collection-generator/blob/main/Sources/PackageCollectionSigner/README.md)),
 they had been downloaded from [https://www.apple.com/certificateauthority/](https://www.apple.com/certificateauthority/)
 and depends of your Swift package collection certificate:
-- `ca-intermediate`: Worldwide Developer Relations - G3
+- `ca-intermediate`: Worldwide Developer Relations - G6
 - `ca-root`: Apple Inc. Root
 
-Reading the content of `.cer` files with DER encoding is possible with this command:
+To know which intermediate certificate you must use, read the contents of your public certificate
 ```bash
-openssl x509 -inform DER -text -noout -in ca-root.cer
+openssl x509 -inform DER -text -noout -in spm_collection.cer
+```
+Here an output example that means you need to use the "G6" intermediate certificate
+```
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+        Signature Algorithm: ecdsa-with-SHA256
+        Issuer: CN=Apple Worldwide Developer Relations Certification Authority, OU=G6, O=Apple Inc., C=US
+        Validity
+            [...]
 ```
 
 ### Collection Generation
